@@ -97,6 +97,7 @@
                                                         variant="solo"
                                                         v-model="new_task"
                                                         v-on:keyup.enter="createTask"
+                                                        style="margin: 0;"
                                                     >
                                                         <template #append-inner>
                                                             <v-btn 
@@ -224,7 +225,11 @@
                 const new_task = String( this.new_task );
                 if ( new_task.trim() === '' ) {
                     this.validation = false;
-                    alert( 'input required' );
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops! Something went wrong.",
+                        text: "New Task field is required."
+                    });
                 } else {
                     this.validation = true;
                 }
