@@ -76,7 +76,13 @@
                                             </v-col>
                                             <v-col sm="2">
                                                 <v-sheet class="ma-2" style="text-align: right;">
-                                                    <v-btn icon="mdi-delete" size="small" color="red-darken-3" class="mr-1 ml-1"></v-btn>
+                                                    <v-btn 
+                                                        icon="mdi-delete" 
+                                                        size="small" 
+                                                        color="red-darken-3" 
+                                                        class="mr-1 ml-1"
+                                                        v-on:click="deleteTask( task.id )"
+                                                    ></v-btn>
                                                 </v-sheet>
                                             </v-col>
                                         </v-row>
@@ -237,6 +243,20 @@
             clickTasks() 
             {
                 
+            },
+            deleteTask(id)
+            {
+                instance.delete(
+                    `todo/${id}`
+                ).then( (response) => {
+                    this.tasks = this.tasks.filter( (task) => task.id !== id );
+                } ).catch( ( response ) => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops! Something went wrong.",
+                        text: response.message
+                    });
+                } );
             }
         }
     }
