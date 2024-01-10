@@ -45,6 +45,7 @@
                                 size="large"
                                 append-icon="mdi-trash-can"
                                 color="red-darken-3"
+                                v-on:click="confirmDeleteDoneTasks"
                             >
                                 Tasks Done
                             </v-btn>
@@ -359,7 +360,47 @@
                     Swal.fire({
                         icon: "success",
                         title: "Success",
-                        text: "Successfully deleted all task."
+                        text: "Successfully deleted all tasks."
+                    });
+                } ).catch( ( response ) => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops! Something went wrong.",
+                        text: response.message
+                    });
+                } );
+            },
+            confirmDeleteDoneTasks()
+            {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Confirmation",
+                    text: "Are you sure you want to delete all tasks that are done?",
+                    showDenyButton: true,
+                    denyButtonText: "No",
+                    confirmButtonText: "Yes",
+                    allowOutsideClick: () => !Swal.isLoading
+                }).then(( response) => {
+                    if ( response.isConfirmed ) {
+                        this.deleteDoneTasks();
+                    }
+                });
+            },
+            deleteDoneTasks()
+            {
+                instance.delete(
+                    'todos/done'
+                ).then( (response) => {
+                    this.tasks = this.tasks.filter((task) => !task.is_done);
+
+                    this.todo_tasks = 0;
+                    this.done_tasks = 0;
+                    this.countTasks( this.tasks );
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: "Successfully deleted all tasks that are done."
                     });
                 } ).catch( ( response ) => {
                     Swal.fire({
