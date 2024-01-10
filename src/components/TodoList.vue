@@ -66,11 +66,16 @@
                                         <v-row no-gutters>
                                             <v-col sm="2">
                                                 <v-sheet class="ma-2" style="text-align: left;">
-                                                    <v-btn icon="mdi-check" color="grey-lighten-4" size="small"></v-btn>
+                                                    <v-btn 
+                                                        icon="mdi-check" 
+                                                        v-bind:color="[ task.is_done ? 'green-darken-2' : 'grey-lighten-4' ]"
+                                                        size="small"
+                                                        v-on:click="updateTask( task )"
+                                                    ></v-btn>
                                                 </v-sheet>
                                             </v-col>
                                             <v-col sm="8">
-                                                <v-sheet class="ma-2 pa-2">
+                                                <v-sheet v-bind:class="[ task.is_done ? 'line-through' : '' , 'ma-2 pa-2' ]">
                                                     {{ task.todo }}
                                                 </v-sheet>
                                             </v-col>
@@ -164,6 +169,10 @@
         border: 2px solid #c2c2c2;
         border-radius: 10px;
     }
+
+    .line-through {
+        text-decoration: line-through;
+    }
 </style>
   
 <script>
@@ -243,6 +252,29 @@
             clickTasks() 
             {
                 
+            },
+            updateTask( task )
+            {
+                instance.put(
+                    `todo/${task.id}`,
+                    {
+                        is_done: !task.is_done
+                    }
+                ).then( (response) => {
+                    this.tasks = this.tasks.map( ( task ) => {
+                        if ( task.id === response.data.id ) {
+                            task.is_done = response.data.is_done;
+                        }
+                        
+                        return task;
+                    } );
+                } ).catch( ( response ) => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops! Something went wrong.",
+                        text: response.message
+                    });
+                } );
             },
             deleteTask(id)
             {
