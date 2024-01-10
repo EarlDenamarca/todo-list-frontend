@@ -14,7 +14,7 @@
                                 class="card-header-button"
                                 size="large"
                                 color="blue-darken-3"
-                                v-on:click="clickTasks"
+                                v-on:click="clickPendingTasks"
                             >
                                 Tasks
                                 <template v-slot:append>
@@ -29,6 +29,7 @@
                                 class="card-header-button"
                                 size="large"
                                 color="blue-darken-3"
+                                v-on:click="fetchDoneTasks"
                             >
                                 Tasks Done
                                 <template v-slot:append>
@@ -68,7 +69,7 @@
                                                 <v-sheet class="ma-2" style="text-align: left;">
                                                     <v-btn 
                                                         icon="mdi-check" 
-                                                        v-bind:color="[ task.is_done ? 'green-darken-2' : 'grey-lighten-4' ]"
+                                                        v-bind:color="task.is_done ? 'green-darken-2' : 'grey-lighten-4'"
                                                         size="small"
                                                         v-on:click="updateTask( task )"
                                                     ></v-btn>
@@ -198,20 +199,28 @@
                 instance.get(
                     'todos' 
                 ).then( ( response ) => {
-                    this.tasks = response.data;
-                    this.tasks.forEach( ( task ) => {
-                        if ( task?.is_done ) {
-                            this.done_tasks++;
-                        } else {
-                            this.todo_tasks++;
-                        }
-                    } );
+                    this.todo_tasks = 0;
+                    this.done_tasks = 0;
+                    this.tasks      = response.data;
+
+                    this.countTasks( this.tasks );
+                    
                 } ).catch( ( response ) => {
                     Swal.fire({
                         icon: "error",
                         title: "Oops! Something went wrong.",
                         text: response.message
                     });
+                } );
+            },
+            countTasks( tasks )
+            {
+                tasks.forEach( ( task ) => {
+                    if ( task?.is_done ) {
+                        this.done_tasks++;
+                    } else {
+                        this.todo_tasks++;
+                    }
                 } );
             },
             createTask() 
@@ -226,6 +235,10 @@
                         }
                     ).then( ( response ) => {
                         this.tasks.push( response.data );
+
+                        this.todo_tasks = 0;
+                        this.done_tasks = 0;
+                        this.countTasks( this.tasks );
                     } ).catch( ( response ) => {
                         Swal.fire({
                             icon: "error",
@@ -249,10 +262,6 @@
                     this.validation = true;
                 }
             },
-            clickTasks() 
-            {
-                
-            },
             updateTask( task )
             {
                 instance.put(
@@ -265,9 +274,12 @@
                         if ( task.id === response.data.id ) {
                             task.is_done = response.data.is_done;
                         }
-                        
                         return task;
                     } );
+
+                    this.todo_tasks = 0;
+                    this.done_tasks = 0;
+                    this.countTasks( this.tasks );
                 } ).catch( ( response ) => {
                     Swal.fire({
                         icon: "error",
@@ -281,13 +293,39 @@
                 instance.delete(
                     `todo/${id}`
                 ).then( (response) => {
-                    this.tasks = this.tasks.filter( (task) => task.id !== id );
+                    this.tasks      = this.tasks.filter( (task) => task.id !== id );
+                    this.todo_tasks = 0;
+                    this.done_tasks = 0;
+
+                    this.countTasks( this.tasks );
                 } ).catch( ( response ) => {
                     Swal.fire({
                         icon: "error",
                         title: "Oops! Something went wrong.",
                         text: response.message
                     });
+                } );
+            },
+            clickPendingTasks() 
+            {
+                instance.get(
+                    'todos?is_done=0'
+                ).then( ( response ) => {
+                    this.tasks = response.data;
+
+                    this.todo_tasks = 0;
+                    this.countTasks( this.tasks );
+                } );
+            },
+            fetchDoneTasks()
+            {
+                instance.get(
+                    'todos?is_done=1'
+                ).then( ( response ) => {
+                    this.tasks = response.data;
+
+                    this.done_tasks = 0;
+                    this.countTasks( this.tasks );
                 } );
             }
         }
