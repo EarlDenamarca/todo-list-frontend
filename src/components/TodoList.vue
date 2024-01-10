@@ -53,6 +53,7 @@
                                 size="large"
                                 append-icon="mdi-trash-can"
                                 color="red-darken-3"
+                                v-on:click="confirmDeleteTasks"
                             >
                                 Tasks
                             </v-btn>
@@ -326,6 +327,46 @@
 
                     this.done_tasks = 0;
                     this.countTasks( this.tasks );
+                } );
+            },
+            confirmDeleteTasks()
+            {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Confirmation",
+                    text: "Are you sure you want to delete all the tasks?",
+                    showDenyButton: true,
+                    denyButtonText: "No",
+                    confirmButtonText: "Yes",
+                    allowOutsideClick: () => !Swal.isLoading
+                }).then(( response) => {
+                    if ( response.isConfirmed ) {
+                        this.deleteTasks();
+                    }
+                });
+            },
+            deleteTasks()
+            {
+                instance.delete(
+                    'todos'
+                ).then( (response) => {
+                    this.tasks      = [];
+
+                    this.todo_tasks = 0;
+                    this.done_tasks = 0;
+                    this.countTasks( this.tasks );
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: "Successfully deleted all task."
+                    });
+                } ).catch( ( response ) => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops! Something went wrong.",
+                        text: response.message
+                    });
                 } );
             }
         }
